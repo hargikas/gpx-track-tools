@@ -6,7 +6,6 @@ import statistics
 import os
 
 import gpxpy
-import gpxpy.gpx
 import srtm
 
 from haversine import Haversine

@@ -8,7 +8,8 @@ name = "pypi"
 [packages]
 
 gpxpy = "*"
-"srtm.py" = "*"
+"SRTM.py" = "*"
+mapbox = "*"
 
 
 [dev-packages]

@@ -1,0 +1,70 @@
+{
+    "points": {
+        "Home": {
+            "latitude": 37.9674036,
+            "longitude": 23.7462545
+        },
+        "Idika(>2017)": {
+            "latitude": 37.9827222,
+            "longitude": 23.7276476
+        },
+        "SotiriouScuba": {
+            "latitude": 37.9745537,
+            "longitude": 23.7617315
+        },
+        "Idika(<2017)": {
+            "latitude": 37.9591001,
+            "longitude": 23.7206316
+        }
+    },
+    "routes": [
+        {
+            "name": "Ride To Work",
+            "description": "My daily ride towards work (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "Home",
+            "end": "Idika(>2017)",
+            "approximate": true
+        },
+        {
+            "name": "Return from Work",
+            "description": "My daily ride returning from work (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "Idika(>2017)",
+            "end": "Home",
+            "approximate": true
+        },
+        {
+            "name": "Ride To Sotiriou Diving Center",
+            "description": "A ride towards the diving center of Sotiriou (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "Home",
+            "end": "SotiriouScuba",
+            "approximate": true
+        },
+        {
+            "name": "Return from Sotiriou Diving Center",
+            "description": "Return from the diving center of Sotiriou (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "SotiriouScuba",
+            "end": "Home",
+            "approximate": true
+        },
+        {
+            "name": "Ride To Work (Previous Address)",
+            "description": "Old Route (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "Home",
+            "end": "Idika(<2017)",
+            "approximate": false
+        },
+        {
+            "name": "Return from Work (Previous Address)",
+            "description": "Old Route (elevation: #HEIGHT_DIFFERENCE#m), with straight line distance of: #STRAIGHT_DISTANCE_KM#km",
+            "start": "Idika(<2017)",
+            "end": "Home",
+            "approximate": false
+        }
+    ],
+    "proximity_limits": {
+        "min": 10,
+        "max": 1000,
+        "ratio": 0.05,
+        "offroute-limit": 200
+    }
+}
