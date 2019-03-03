@@ -1,13 +1,16 @@
-from mapbox import MapMatcher
+import datetime
+import glob
+import os
+import sys
+import time
+
 import gpxpy
 import gpxpy.gpx
 import srtm
-
-import os
-import time
-import datetime
+from mapbox import MapMatcher
 
 LIMIT_JSON = 100
+
 
 def roundSeconds(dateTimeObject):
     newDateTime = dateTimeObject
@@ -17,10 +20,12 @@ def roundSeconds(dateTimeObject):
 
     return newDateTime.replace(microsecond=0)
 
+
 def unique_list(seq):
     seen = set()
     seen_add = seen.add
     return [tuple(x) for x in seq if not (tuple(x) in seen or seen_add(tuple(x)))]
+
 
 def gpx_points_to_GeoJSONs(points):
     json_all = []
@@ -46,11 +51,15 @@ def gpx_points_to_GeoJSONs(points):
     json_all.append(json_cur)
     return json_all
 
+
 def GeoJSONs_to_new_gpx(input_jsons, flat_points, new_gpx):
     # Map Matrching response has the coordinates, matches and indeces with the input
-    flat_coord = [coord for json_res in input_jsons for feature in json_res['features'] for coord in feature['geometry']['coordinates']]
-    flat_matches = [coord for json_res in input_jsons for feature in json_res['features'] for coord in feature['properties']['matchedPoints']]
-    flat_indeces = [index for json_res in input_jsons for feature in json_res['features'] for index in feature['properties']['indices']]
+    flat_coord = [coord for json_res in input_jsons for feature in json_res['features']
+                  for coord in feature['geometry']['coordinates']]
+    flat_matches = [coord for json_res in input_jsons for feature in json_res['features']
+                    for coord in feature['properties']['matchedPoints']]
+    flat_indeces = [index for json_res in input_jsons for feature in json_res['features']
+                    for index in feature['properties']['indices']]
 
     # Fix Indeces (It is broken with the limit)
     prev_index = -1
@@ -66,7 +75,7 @@ def GeoJSONs_to_new_gpx(input_jsons, flat_points, new_gpx):
         last_index = flat_coord.index(flat_matches[i], last_index)
         if last_index != -1:
             flat_coord[last_index].append(cur_time)
-    
+
     # Fix empty times
     prev_time = None
     next_time = None
@@ -81,10 +90,11 @@ def GeoJSONs_to_new_gpx(input_jsons, flat_points, new_gpx):
                     next_time = flat_coord[j][2]
                     break
                 else:
-                    none_time +=1
+                    none_time += 1
 
             # Calculate the time_intervals
-            time_diff = (next_time - prev_time).total_seconds() / (none_time + 1)
+            time_diff = (next_time - prev_time).total_seconds() / \
+                (none_time + 1)
             prev_time = prev_time + datetime.timedelta(seconds=time_diff)
             flat_coord[i].append(roundSeconds(prev_time))
 
@@ -95,10 +105,11 @@ def GeoJSONs_to_new_gpx(input_jsons, flat_points, new_gpx):
 def snap_roads(input_json):
     # Create a limit to how many call per minute are permited
     if input_json and input_json["geometry"]["coordinates"]:
-        print("Calling the Map-Matching Web Service for %d points" % (len(input_json["geometry"]["coordinates"])))
+        print("Calling the Map-Matching Web Service for %d points" %
+              (len(input_json["geometry"]["coordinates"])))
         time.sleep(1)
         service = MapMatcher(
-            access_token='pk.eyJ1IjoiaGFyZ2lrYXMiLCJhIjoiY2pvOWx6b3RnMWl1ejNwczExdGhwOWhuOCJ9.4o3i_BYb63hnZr8Licb0AgXXX')
+            access_token='pk.eyJ1IjoiaGFyZ2lrYXMiLCJhIjoiY2pvOWx6b3RnMWl1ejNwczExdGhwOWhuOCJ9.4o3i_BYb63hnZr8Licb0Ag')
         response = service.match(input_json, profile='mapbox.cycling')
         if response.status_code == 200:
             response_GeoJSON = response.geojson()
@@ -120,7 +131,7 @@ def process_file(filename):
 
         if gpx.name:
             new_gpx.name = gpx.name
-        
+
         if gpx.description:
             new_gpx.description = gpx.description
 
@@ -129,15 +140,17 @@ def process_file(filename):
             flat_points = [
                 point for segment in track.segments for point in segment.points]
             # Break points into many GeoJSON (due to point limit), and call the map-matching web-service
-            json_fixed = [snap_roads(json_cur) for json_cur in gpx_points_to_GeoJSONs(flat_points)]
-            
+            json_fixed = [snap_roads(json_cur)
+                          for json_cur in gpx_points_to_GeoJSONs(flat_points)]
+
             everything_ok = True
             for json_cur in json_fixed:
                 if (not json_cur['code']) or (json_cur['code'] != 'Ok'):
                     everything_ok = False
-            
+
             if everything_ok:
-                flat_coord = GeoJSONs_to_new_gpx(json_fixed, flat_points, new_gpx)
+                flat_coord = GeoJSONs_to_new_gpx(
+                    json_fixed, flat_points, new_gpx)
 
                 # Create track in our GPX:
                 gpx_track = gpxpy.gpx.GPXTrack()
@@ -153,8 +166,8 @@ def process_file(filename):
 
                 # Create points:
                 for longitude, latitude, cur_time in flat_coord:
-                    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude, longitude, elevation=0, time=cur_time))
-
+                    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(
+                        latitude, longitude, elevation=0, time=cur_time))
 
     print("Adjusting Elevation Data")
     elevation_data = srtm.get_data()
@@ -171,5 +184,7 @@ def process_file(filename):
 
 
 if __name__ == '__main__':
-    process_file("D:\\tmp\\ridewithgps\\20181109-082114(1).gpx")
+    for arg in sys.argv[1:]:
+        for filename in glob.iglob(arg):
+            process_file(filename)
     # snap_roads()
